@@ -1,1 +1,267 @@
-# tilskudsoversigt
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tilskudsoversigt – Banana Cph · F7 · Sidestrømme</title>
+<style>
+  :root {
+    --bg: #f8f7f4; --surface: #ffffff;
+    --border: rgba(0,0,0,0.08); --border-strong: rgba(0,0,0,0.15);
+    --text: #1a1a18; --text-muted: #6b6b67; --text-hint: #9b9b96;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489; --purple-border: #AFA9EC;
+    --teal-bg: #E1F5EE; --teal-text: #085041; --teal-border: #5DCAA5;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --blue-bg: #E6F1FB; --blue-text: #185FA5;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-text: #791F1F;
+    --radius: 12px; --radius-sm: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18; --surface: #242422;
+      --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.15);
+      --text: #f0efe8; --text-muted: #a0a09a; --text-hint: #6b6b67;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { padding: 2.5rem 2rem 1.5rem; border-bottom: 0.5px solid var(--border); background: var(--surface); }
+  .header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
+  .header-titles h1 { font-size: 22px; font-weight: normal; letter-spacing: -0.3px; }
+  .header-titles p { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-family: sans-serif; }
+  .last-updated { font-size: 12px; color: var(--text-hint); font-family: sans-serif; }
+  .main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .filter-btn { font-size: 13px; padding: 6px 16px; border-radius: 20px; border: 0.5px solid var(--border-strong); background: var(--surface); color: var(--text-muted); cursor: pointer; font-family: sans-serif; transition: all 0.15s; }
+  .filter-btn:hover { background: var(--bg); }
+  .filter-btn.active { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple-border); font-weight: 500; }
+  .stats { display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; font-family: sans-serif; }
+  .stat-val { font-size: 20px; font-weight: 500; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.15s; }
+  .card:hover { border-color: var(--border-strong); }
+  .card.is-new { border: 1.5px solid var(--teal-border); }
+  .card.hidden { display: none; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-title { font-size: 15px; line-height: 1.3; }
+  .badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0; }
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 12px; white-space: nowrap; font-weight: 500; font-family: sans-serif; }
+  .badge-new { background: var(--teal-bg); color: var(--teal-text); }
+  .badge-urgent { background: var(--red-bg); color: var(--red-text); }
+  .badge-soon { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-banana { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-f7 { background: var(--purple-bg); color: var(--purple-text); }
+  .badge-sidestroemme { background: var(--green-bg); color: var(--green-text); }
+  .divider { height: 0.5px; background: var(--border); }
+  .meta-row { display: flex; gap: 16px; flex-wrap: wrap; font-family: sans-serif; }
+  .meta { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-size: 11px; color: var(--text-hint); }
+  .meta-val { font-size: 13px; font-weight: 500; }
+  .deadline-bar { height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; }
+  .deadline-fill { height: 100%; border-radius: 2px; }
+  .desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; font-family: sans-serif; }
+  .note { font-size: 12px; color: var(--blue-text); background: var(--blue-bg); border-radius: 6px; padding: 7px 11px; line-height: 1.5; font-family: sans-serif; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; }
+  .via { font-size: 11px; color: var(--text-hint); }
+  .card-link { font-size: 12px; color: var(--blue-text); text-decoration: none; }
+  .card-link:hover { text-decoration: underline; }
+  .loading { text-align: center; padding: 4rem 2rem; color: var(--text-muted); font-family: sans-serif; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--purple-text); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box { background: var(--red-bg); color: var(--red-text); border-radius: var(--radius); padding: 1.5rem; font-family: sans-serif; font-size: 13px; line-height: 1.8; }
+  .error-box code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .empty { text-align: center; padding: 3rem 2rem; color: var(--text-muted); font-family: sans-serif; font-size: 14px; }
+  @media (max-width: 600px) {
+    header, .main { padding-left: 1rem; padding-right: 1rem; }
+    .grid { grid-template-columns: 1fr; }
+    .header-inner { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-titles">
+      <h1>Tilskudsoversigt</h1>
+      <p>Banana Cph &nbsp;·&nbsp; F7 &nbsp;·&nbsp; Sidestrømme</p>
+    </div>
+    <span class="last-updated" id="last-updated"></span>
+  </div>
+</header>
+
+<div class="main">
+  <div class="stats" id="stats"></div>
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-filter="all">Alle puljer</button>
+    <button class="filter-btn" data-filter="banana">Banana Cph</button>
+    <button class="filter-btn" data-filter="f7">F7</button>
+    <button class="filter-btn" data-filter="sidestroemme">Sidestrømme</button>
+    <button class="filter-btn" data-filter="urgent">Ansøg nu</button>
+    <button class="filter-btn" data-filter="new">Nyt siden sidst</button>
+  </div>
+  <div id="grid-container">
+    <div class="loading"><div class="spinner"></div>Henter tilskudspuljer...</div>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycby73GKXEbw8Jq6qps-880wsboSa9laMEJ11iEsg8SX0ZWO-Y4eA90hNeS2wFIhnb5C0AQ/exec';
+const NEW_DAYS = 14;
+const today = new Date(); today.setHours(0,0,0,0);
+
+function daysDiff(s) {
+  if (!s || String(s).trim() === '') return null;
+  const d = new Date(String(s).trim());
+  if (isNaN(d)) return null;
+  return Math.round((d - today) / 86400000);
+}
+function urgency(close) {
+  const d = daysDiff(close);
+  if (d === null) return 'none';
+  if (d < 0) return 'passed';
+  if (d <= 5) return 'urgent';
+  if (d <= 14) return 'soon';
+  return 'ok';
+}
+function deadlineColor(u) {
+  if (u === 'urgent') return '#E24B4A';
+  if (u === 'soon') return '#EF9F27';
+  return '#639922';
+}
+function deadlinePct(open, close) {
+  if (!open || !close) return 0;
+  const o = new Date(String(open).trim()), c = new Date(String(close).trim());
+  if (isNaN(o) || isNaN(c)) return 0;
+  return Math.min(100, Math.max(0, Math.round((today - o) / (c - o) * 100)));
+}
+function isNew(s) {
+  const d = daysDiff(s);
+  return d !== null && d >= -NEW_DAYS && d <= 0;
+}
+function fmtDate(s) {
+  if (!s || String(s).trim() === '') return null;
+  const d = new Date(String(s).trim());
+  if (isNaN(d)) return String(s);
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function tagBadge(t) {
+  const map = { banana: ['badge-banana','Banana Cph'], f7: ['badge-f7','F7'], sidestroemme: ['badge-sidestroemme','Sidestrømme'] };
+  const k = t.trim().toLowerCase();
+  return map[k] ? `<span class="badge ${map[k][0]}">${map[k][1]}</span>` : '';
+}
+
+function renderCard(g) {
+  const tags = (g.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+  const futureOpen = g.open && daysDiff(g.open) > 0;
+  const u = g.close && !futureOpen ? urgency(g.close) : 'ok';
+  if (u === 'passed') return '';
+  const newEntry = isNew(g.tilfojet);
+  const pct = !futureOpen ? deadlinePct(g.open, g.close) : 0;
+  const color = g.close ? deadlineColor(u) : '#888780';
+
+  const urgBadge = u === 'urgent' ? '<span class="badge badge-urgent">Ansøg nu</span>'
+    : u === 'soon' ? '<span class="badge badge-soon">Lukker snart</span>' : '';
+  const newBadge = newEntry ? '<span class="badge badge-new">Ny</span>' : '';
+
+  let deadlineHtml;
+  if (futureOpen) {
+    const d = daysDiff(g.open);
+    deadlineHtml = `<div class="meta"><span class="meta-label">Åbner</span><span class="meta-val" style="color:#185FA5">${fmtDate(g.open)} (${d} dage)</span></div>`;
+  } else if (g.close && String(g.close).trim()) {
+    const d = daysDiff(g.close);
+    deadlineHtml = `<div class="meta"><span class="meta-label">Frist</span><span class="meta-val" style="color:${color}">${fmtDate(g.close)} (${d === 0 ? 'i dag' : d + ' dage'})</span></div>`;
+  } else {
+    deadlineHtml = `<div class="meta"><span class="meta-label">Frist</span><span class="meta-val">Løbende</span></div>`;
+  }
+
+  return `
+  <div class="card${newEntry ? ' is-new' : ''}" data-tags="${tags.join(' ')}" data-urgency="${u}" data-new="${newEntry}">
+    <div class="card-top">
+      <span class="card-title">${g.titel}</span>
+      <div class="badges">${newBadge}${urgBadge}${tags.map(tagBadge).join('')}</div>
+    </div>
+    <div class="divider"></div>
+    <div class="meta-row">
+      <div class="meta"><span class="meta-label">Beløb</span><span class="meta-val">${g.belob || '–'}</span></div>
+      <div class="meta"><span class="meta-label">Tilskud</span><span class="meta-val">${g.tilskud || '–'}</span></div>
+      ${deadlineHtml}
+    </div>
+    ${g.close && !futureOpen && g.open ? `<div class="deadline-bar"><div class="deadline-fill" style="width:${pct}%;background:${color}"></div></div>` : ''}
+    ${g.beskrivelse ? `<p class="desc">${g.beskrivelse}</p>` : ''}
+    ${g.note ? `<div class="note">${g.note}</div>` : ''}
+    <div class="card-footer">
+      <span class="via">${g.via || ''}</span>
+      ${g.link ? `<a class="card-link" href="${g.link}" target="_blank">Læs mere →</a>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderStats(grants) {
+  const active = grants.filter(g => !g.close || daysDiff(g.close) >= 0);
+  const urgent = active.filter(g => ['urgent','soon'].includes(urgency(g.close)));
+  const newOnes = grants.filter(g => isNew(g.tilfojet));
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-val">${active.length}</div><div class="stat-label">Aktive puljer</div></div>
+    <div class="stat"><div class="stat-val" style="color:#E24B4A">${urgent.length}</div><div class="stat-label">Kræver handling snart</div></div>
+    <div class="stat"><div class="stat-val" style="color:#085041">${newOnes.length}</div><div class="stat-label">Nye siden sidst</div></div>`;
+}
+
+function setupFilters() {
+  document.getElementById('filters').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    document.querySelectorAll('.card').forEach(card => {
+      const tags = card.dataset.tags;
+      const u = card.dataset.urgency;
+      const n = card.dataset.new === 'true';
+      if (f === 'all') card.classList.remove('hidden');
+      else if (f === 'urgent') card.classList.toggle('hidden', u !== 'urgent' && u !== 'soon');
+      else if (f === 'new') card.classList.toggle('hidden', !n);
+      else card.classList.toggle('hidden', !tags.includes(f));
+    });
+  });
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    const grants = json.puljer || [];
+
+    if (grants.length === 0) {
+      document.getElementById('grid-container').innerHTML =
+        '<div class="empty">Ingen puljer fundet. Kør fyldData i Apps Script for at importere data.</div>';
+      return;
+    }
+
+    document.getElementById('last-updated').textContent =
+      'Opdateret ' + today.toLocaleDateString('da-DK', {day:'numeric', month:'long', year:'numeric'});
+
+    renderStats(grants);
+    const html = grants.map(renderCard).filter(Boolean).join('');
+    document.getElementById('grid-container').innerHTML =
+      html ? `<div class="grid" id="grid">${html}</div>` : '<div class="empty">Alle frister er passeret.</div>';
+    setupFilters();
+
+  } catch(err) {
+    document.getElementById('grid-container').innerHTML = `
+      <div class="error-box">
+        <strong>Kunne ikke hente data</strong><br><br>
+        Gå til Apps Script → Implementer → Administrer implementeringer → rediger → sæt adgang til <strong>Alle</strong> → gem og kopiér den nye URL.<br><br>
+        <code>${err.message}</code>
+      </div>`;
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
